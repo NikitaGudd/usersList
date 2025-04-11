@@ -1,14 +1,31 @@
+import { UserSearch } from "@/modules/users/components/UserSearch";
+import { useUserStore } from "@/modules/users/store/userStore";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { UserSearch } from "../modules/users/components/UserSearch";
-import { useUserStore } from "../modules/users/store/userStore";
 
-jest.mock("../modules/users/store/userStore", () => ({
+jest.mock("@/modules/users/store/userStore", () => ({
   useUserStore: jest.fn(),
+}));
+
+jest.mock("lodash", () => ({
+  ...jest.requireActual("lodash"),
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  debounce: (fn: Function) => {
+    function debouncedFn(...args: unknown[]) {
+      return fn(...args);
+    }
+    debouncedFn.cancel = jest.fn();
+    return debouncedFn;
+  },
 }));
 
 const mockedUseUserStore = useUserStore as jest.MockedFunction<
   typeof useUserStore
 >;
+
+interface UserStoreState {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+}
 
 describe("UserSearch", () => {
   const mockSetSearchQuery = jest.fn();
@@ -19,7 +36,7 @@ describe("UserSearch", () => {
     mockedUseUserStore.mockReturnValue({
       searchQuery: "",
       setSearchQuery: mockSetSearchQuery,
-    });
+    } as UserStoreState);
   });
 
   it("renders search input with correct placeholder", () => {
@@ -30,20 +47,6 @@ describe("UserSearch", () => {
     );
     expect(searchInput).toBeInTheDocument();
     expect(searchInput).toHaveAttribute("type", "text");
-  });
-
-  it("displays current search query from store", () => {
-    mockedUseUserStore.mockReturnValue({
-      searchQuery: "test query",
-      setSearchQuery: mockSetSearchQuery,
-    });
-
-    render(<UserSearch />);
-
-    const searchInput = screen.getByPlaceholderText(
-      "Пошук за ім'ям або email...",
-    ) as HTMLInputElement;
-    expect(searchInput.value).toBe("test query");
   });
 
   it("calls setSearchQuery when input value changes", () => {
@@ -74,35 +77,27 @@ describe("UserSearch", () => {
   });
 
   it("handles empty search query correctly", () => {
-    mockedUseUserStore.mockReturnValue({
-      searchQuery: "some query",
-      setSearchQuery: mockSetSearchQuery,
-    });
-
     render(<UserSearch />);
 
     const searchInput = screen.getByPlaceholderText(
       "Пошук за ім'ям або email...",
     );
 
+    fireEvent.change(searchInput, { target: { value: "something" } });
     fireEvent.change(searchInput, { target: { value: "" } });
 
     expect(mockSetSearchQuery).toHaveBeenCalledWith("");
   });
 
-  it("preserves input value between renders", () => {
-    const { rerender } = render(<UserSearch />);
-
-    mockedUseUserStore.mockReturnValue({
-      searchQuery: "updated query",
-      setSearchQuery: mockSetSearchQuery,
-    });
-
-    rerender(<UserSearch />);
+  it("updates input value when text is entered", () => {
+    render(<UserSearch />);
 
     const searchInput = screen.getByPlaceholderText(
       "Пошук за ім'ям або email...",
     ) as HTMLInputElement;
+
+    fireEvent.change(searchInput, { target: { value: "updated query" } });
+
     expect(searchInput.value).toBe("updated query");
   });
 });

@@ -6,7 +6,7 @@ import { UserSearch } from "./UserSearch";
 import { Loader2 } from "lucide-react";
 import { UserModal } from "./UserModal";
 import AutoSizer from "react-virtualized-auto-sizer";
-import { Alert, AlertDescription } from "../../../components/ui";
+import { Alert, AlertDescription } from "@/components/ui/Alert";
 
 export const UserList: React.FC = () => {
   const { users, isLoading, error } = useUsers();

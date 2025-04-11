@@ -1,5 +1,5 @@
+import { UserList } from "@/modules/users";
 import React from "react";
-import { UserList } from "../modules/users";
 
 const HomePage: React.FC = () => {
   return (

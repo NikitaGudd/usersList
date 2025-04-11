@@ -1,6 +1,7 @@
 import React from "react";
 import { User } from "../types";
-import { Button, Card, CardContent } from "../../../components/ui";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 
 interface UserCardProps {
   user: User;

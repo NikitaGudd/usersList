@@ -3,13 +3,13 @@ import React from "react";
 import { useUserDetails } from "../hooks/useUserDetails";
 import { Loader2 } from "lucide-react";
 import {
-  Button,
   Dialog,
-  DialogContent,
   DialogHeader,
+  DialogContent,
   DialogTitle,
   DialogFooter,
-} from "../../../components/ui";
+} from "@/components/ui/Dialog";
+import { Button } from "@/components/ui/Button";
 
 interface UserModalProps {
   userId: number;
