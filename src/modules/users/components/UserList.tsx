@@ -1,12 +1,15 @@
 import React, { useState } from "react";
-import { FixedSizeList as List } from "react-window";
-import { UserCard } from "./UserCard";
-import { useUsers } from "../hooks/useUsers";
-import { UserSearch } from "./UserSearch";
-import { Loader2 } from "lucide-react";
-import { UserModal } from "./UserModal";
 import AutoSizer from "react-virtualized-auto-sizer";
+import { FixedSizeList as List } from "react-window";
+
+import { Loader2 } from "lucide-react";
+
 import { Alert, AlertDescription } from "@/components/ui/Alert";
+
+import { useUsers } from "../hooks/useUsers";
+import { UserCard } from "./UserCard";
+import { UserModal } from "./UserModal";
+import { UserSearch } from "./UserSearch";
 
 export const UserList: React.FC = () => {
   const { users, isLoading, error } = useUsers();
@@ -19,10 +22,7 @@ export const UserList: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loader2
-          data-testid="loader"
-          className="h-8 w-8 animate-spin text-primary"
-        />
+        <Loader2 data-testid="loader" className="h-8 w-8 animate-spin text-primary" />
         <span className="ml-2">Завантаження користувачів...</span>
       </div>
     );
@@ -31,7 +31,7 @@ export const UserList: React.FC = () => {
   if (error) {
     return (
       <Alert variant="destructive" className="mb-4">
-        <AlertDescription>Помилка завантаження: {error}</AlertDescription>
+        <AlertDescription>Помилка завантаження.</AlertDescription>
       </Alert>
     );
   }
@@ -50,12 +50,7 @@ export const UserList: React.FC = () => {
         <div className="grow">
           <AutoSizer>
             {({ height, width }) => (
-              <List
-                height={height - 100}
-                itemCount={users.length}
-                itemSize={100}
-                width={width}
-              >
+              <List height={height - 100} itemCount={users.length} itemSize={100} width={width}>
                 {({ index, style }) => {
                   const user = users[index];
                   return (
@@ -70,10 +65,7 @@ export const UserList: React.FC = () => {
         </div>
       )}
       {selectedUserId && (
-        <UserModal
-          userId={selectedUserId}
-          onClose={() => setSelectedUserId(null)}
-        />
+        <UserModal userId={selectedUserId} onClose={() => setSelectedUserId(null)} />
       )}
     </div>
   );

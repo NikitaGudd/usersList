@@ -1,39 +1,41 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useUserStore } from "../store/userStore";
-import _ from "lodash";
+import React from "react";
+
+import { X } from "lucide-react";
+
+import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
+import { useUserStore } from "../store/userStore";
+
 export const UserSearch: React.FC = () => {
-  const { setSearchQuery } = useUserStore();
-  const [inputValue, setInputValue] = useState("");
-
-  const debouncedFn = useRef(
-    _.debounce((value: string) => {
-      setSearchQuery(value);
-    }, 300),
-  ).current;
-
-  useEffect(() => {
-    return () => {
-      debouncedFn.cancel();
-    };
-  }, [debouncedFn]);
+  const { searchQuery, setSearchQuery } = useUserStore();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInputValue(value);
-    debouncedFn(value);
+    setSearchQuery(e.target.value);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
   };
 
   return (
-    <div className="mb-4">
+    <div className="mb-4 relative">
       <Input
         type="text"
         placeholder="Пошук за ім'ям або email..."
-        value={inputValue}
+        value={searchQuery}
         onChange={handleSearchChange}
         className="w-full"
       />
+      {searchQuery && (
+        <Button
+          onClick={clearSearch}
+          className="absolute right-0 top-1/2 transform -translate-y-1/2  cursor-pointer"
+          aria-label="Очистити пошук"
+        >
+          <X size={18} />
+        </Button>
+      )}
     </div>
   );
 };

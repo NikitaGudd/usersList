@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
+
 import { User } from "../modules/users";
 import { UserCard } from "../modules/users/components/UserCard";
 
@@ -56,9 +57,10 @@ describe("UserCard", () => {
     const button = screen.getByText("Детальніше");
     expect(button).toHaveClass(
       "w-[200px]",
-      "text-white",
-      "bg-blue-500",
-      "hover:bg-blue-300",
+      "text-black",
+      "border",
+      "bg-white-200",
+      "hover:bg-gray-300",
       "cursor-pointer",
       "mt-5",
     );
@@ -73,10 +75,6 @@ describe("UserCard", () => {
     render(<UserCard user={mockUser} onViewDetails={mockOnViewDetails} />);
 
     const flexContainer = screen.getByText("John Doe").closest(".flex");
-    expect(flexContainer).toHaveClass(
-      "flex",
-      "items-center",
-      "justify-between",
-    );
+    expect(flexContainer).toHaveClass("flex", "items-center", "justify-between");
   });
 });

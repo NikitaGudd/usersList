@@ -1,31 +1,13 @@
+import { fireEvent, render, screen } from "@testing-library/react";
+
 import { UserSearch } from "@/modules/users/components/UserSearch";
 import { useUserStore } from "@/modules/users/store/userStore";
-import { render, screen, fireEvent } from "@testing-library/react";
 
 jest.mock("@/modules/users/store/userStore", () => ({
   useUserStore: jest.fn(),
 }));
 
-jest.mock("lodash", () => ({
-  ...jest.requireActual("lodash"),
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  debounce: (fn: Function) => {
-    function debouncedFn(...args: unknown[]) {
-      return fn(...args);
-    }
-    debouncedFn.cancel = jest.fn();
-    return debouncedFn;
-  },
-}));
-
-const mockedUseUserStore = useUserStore as jest.MockedFunction<
-  typeof useUserStore
->;
-
-interface UserStoreState {
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-}
+const mockedUseUserStore = useUserStore as jest.MockedFunction<typeof useUserStore>;
 
 describe("UserSearch", () => {
   const mockSetSearchQuery = jest.fn();
@@ -36,25 +18,35 @@ describe("UserSearch", () => {
     mockedUseUserStore.mockReturnValue({
       searchQuery: "",
       setSearchQuery: mockSetSearchQuery,
-    } as UserStoreState);
+    });
   });
 
   it("renders search input with correct placeholder", () => {
     render(<UserSearch />);
 
-    const searchInput = screen.getByPlaceholderText(
-      "Пошук за ім'ям або email...",
-    );
+    const searchInput = screen.getByPlaceholderText("Пошук за ім'ям або email...");
     expect(searchInput).toBeInTheDocument();
     expect(searchInput).toHaveAttribute("type", "text");
+  });
+
+  it("displays current search query from store", () => {
+    mockedUseUserStore.mockReturnValue({
+      searchQuery: "test query",
+      setSearchQuery: mockSetSearchQuery,
+    });
+
+    render(<UserSearch />);
+
+    const searchInput = screen.getByPlaceholderText(
+      "Пошук за ім'ям або email...",
+    ) as HTMLInputElement;
+    expect(searchInput.value).toBe("test query");
   });
 
   it("calls setSearchQuery when input value changes", () => {
     render(<UserSearch />);
 
-    const searchInput = screen.getByPlaceholderText(
-      "Пошук за ім'ям або email...",
-    );
+    const searchInput = screen.getByPlaceholderText("Пошук за ім'ям або email...");
 
     fireEvent.change(searchInput, { target: { value: "john doe" } });
 
@@ -70,34 +62,108 @@ describe("UserSearch", () => {
       .closest("div");
     expect(searchContainer).toHaveClass("mb-4");
 
-    const searchInput = screen.getByPlaceholderText(
-      "Пошук за ім'ям або email...",
-    );
+    const searchInput = screen.getByPlaceholderText("Пошук за ім'ям або email...");
     expect(searchInput).toHaveClass("w-full");
   });
 
   it("handles empty search query correctly", () => {
+    mockedUseUserStore.mockReturnValue({
+      searchQuery: "some query",
+      setSearchQuery: mockSetSearchQuery,
+    });
+
     render(<UserSearch />);
 
-    const searchInput = screen.getByPlaceholderText(
-      "Пошук за ім'ям або email...",
-    );
+    const searchInput = screen.getByPlaceholderText("Пошук за ім'ям або email...");
 
-    fireEvent.change(searchInput, { target: { value: "something" } });
     fireEvent.change(searchInput, { target: { value: "" } });
 
     expect(mockSetSearchQuery).toHaveBeenCalledWith("");
   });
 
-  it("updates input value when text is entered", () => {
-    render(<UserSearch />);
+  it("preserves input value between renders", () => {
+    const { rerender } = render(<UserSearch />);
+
+    mockedUseUserStore.mockReturnValue({
+      searchQuery: "updated query",
+      setSearchQuery: mockSetSearchQuery,
+    });
+
+    rerender(<UserSearch />);
 
     const searchInput = screen.getByPlaceholderText(
       "Пошук за ім'ям або email...",
     ) as HTMLInputElement;
-
-    fireEvent.change(searchInput, { target: { value: "updated query" } });
-
     expect(searchInput.value).toBe("updated query");
+  });
+
+  it("does not display clear button when search query is empty", () => {
+    mockedUseUserStore.mockReturnValue({
+      searchQuery: "",
+      setSearchQuery: mockSetSearchQuery,
+    });
+
+    render(<UserSearch />);
+
+    const clearButton = screen.queryByLabelText("Очистити пошук");
+    expect(clearButton).not.toBeInTheDocument();
+  });
+
+  it("displays clear button when search query is not empty", () => {
+    mockedUseUserStore.mockReturnValue({
+      searchQuery: "test query",
+      setSearchQuery: mockSetSearchQuery,
+    });
+
+    render(<UserSearch />);
+
+    const clearButton = screen.getByLabelText("Очистити пошук");
+    expect(clearButton).toBeInTheDocument();
+  });
+
+  it("calls setSearchQuery with empty string when clear button is clicked", () => {
+    mockedUseUserStore.mockReturnValue({
+      searchQuery: "test query",
+      setSearchQuery: mockSetSearchQuery,
+    });
+
+    render(<UserSearch />);
+
+    const clearButton = screen.getByLabelText("Очистити пошук");
+    fireEvent.click(clearButton);
+
+    expect(mockSetSearchQuery).toHaveBeenCalledTimes(1);
+    expect(mockSetSearchQuery).toHaveBeenCalledWith("");
+  });
+
+  it("has X icon in the clear button", () => {
+    mockedUseUserStore.mockReturnValue({
+      searchQuery: "test query",
+      setSearchQuery: mockSetSearchQuery,
+    });
+
+    render(<UserSearch />);
+
+    const clearButton = screen.getByLabelText("Очистити пошук");
+    expect(clearButton).toBeInTheDocument();
+
+    const buttonSVG = clearButton.querySelector("svg");
+    expect(buttonSVG).toBeInTheDocument();
+  });
+
+  it("positions clear button correctly", () => {
+    mockedUseUserStore.mockReturnValue({
+      searchQuery: "test query",
+      setSearchQuery: mockSetSearchQuery,
+    });
+
+    render(<UserSearch />);
+
+    const clearButton = screen.getByLabelText("Очистити пошук");
+    expect(clearButton.closest("button")).toHaveClass("absolute");
+    expect(clearButton.closest("button")).toHaveClass("right-0");
+    expect(clearButton.closest("button")).toHaveClass("top-1/2");
+    expect(clearButton.closest("button")).toHaveClass("transform");
+    expect(clearButton.closest("button")).toHaveClass("-translate-y-1/2");
   });
 });

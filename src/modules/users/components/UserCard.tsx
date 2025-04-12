@@ -1,7 +1,9 @@
 import React from "react";
-import { User } from "../types";
-import { Card, CardContent } from "@/components/ui/Card";
+
 import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
+
+import { User } from "../types";
 
 interface UserCardProps {
   user: User;
@@ -19,7 +21,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onViewDetails }) => {
         <CardContent>
           <Button
             onClick={() => onViewDetails(user.id)}
-            className="w-[200px] text-white bg-blue-500 hover:bg-blue-300 cursor-pointer mt-5"
+            className="w-[200px] text-black border bg-white-200 hover:bg-gray-300 cursor-pointer mt-5"
           >
             Детальніше
           </Button>

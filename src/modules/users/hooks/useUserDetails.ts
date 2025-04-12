@@ -1,5 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
+
+import { useQuery } from "@tanstack/react-query";
+
 import { fetchUserById } from "../api/userApi";
 import { useUserStore } from "../store/userStore";
 
@@ -8,8 +10,7 @@ export const useUserDetails = (userId: number | null) => {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["user", userId],
-    queryFn: () =>
-      userId ? fetchUserById(userId) : Promise.reject("No user ID provided"),
+    queryFn: () => (userId ? fetchUserById(userId) : Promise.reject("No user ID provided")),
     enabled: !!userId,
   });
 
@@ -18,12 +19,16 @@ export const useUserDetails = (userId: number | null) => {
       setSelectedUser(data);
     }
     setLoading(isLoading);
-    setError(error ? String(error) : null);
+    setError(!!error);
+
+    if (error) {
+      console.error("Error when receiving user data:", error);
+    }
   }, [data, isLoading, error, setSelectedUser, setLoading, setError]);
 
   return {
     user: data,
     isLoading,
-    error: error ? String(error) : null,
+    error: !!error,
   };
 };

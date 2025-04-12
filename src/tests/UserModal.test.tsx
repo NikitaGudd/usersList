@@ -1,19 +1,18 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { UserModal } from "../modules/users/components/UserModal";
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { fireEvent, render, screen } from "@testing-library/react";
+
+import { useUserDetails } from "@/modules/users";
+import { UserModal } from "@/modules/users/components/UserModal";
 
 jest.mock("../modules/users/hooks/useUserDetails", () => ({
   useUserDetails: jest.fn(),
 }));
 
-import { useUserDetails } from "../modules/users/hooks/useUserDetails";
-
 const mockOnClose = jest.fn();
 
-const mockedUseUserDetails = useUserDetails as jest.MockedFunction<
-  typeof useUserDetails
->;
+const mockedUseUserDetails = useUserDetails as jest.MockedFunction<typeof useUserDetails>;
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -28,9 +27,7 @@ const createTestQueryClient = () =>
 
 const renderWithQueryClient = (ui: React.ReactElement) => {
   const testQueryClient = createTestQueryClient();
-  return render(
-    <QueryClientProvider client={testQueryClient}>{ui}</QueryClientProvider>,
-  );
+  return render(<QueryClientProvider client={testQueryClient}>{ui}</QueryClientProvider>);
 };
 
 const mockUser = {
@@ -55,7 +52,7 @@ describe("UserModal", () => {
     mockedUseUserDetails.mockReturnValue({
       user: undefined,
       isLoading: true,
-      error: null,
+      error: false,
     });
 
     renderWithQueryClient(<UserModal userId={1} onClose={mockOnClose} />);
@@ -70,20 +67,19 @@ describe("UserModal", () => {
     mockedUseUserDetails.mockReturnValue({
       user: undefined,
       isLoading: false,
-      error: "Failed to fetch user",
+      error: true,
     });
 
     renderWithQueryClient(<UserModal userId={1} onClose={mockOnClose} />);
 
-    expect(screen.getByText(/Помилка завантаження:/)).toBeInTheDocument();
-    expect(screen.getByText(/Failed to fetch user/)).toBeInTheDocument();
+    expect(screen.getByText("Помилка завантаження.")).toBeInTheDocument();
   });
 
   it("renders user details correctly when data is loaded", () => {
     mockedUseUserDetails.mockReturnValue({
       user: mockUser,
       isLoading: false,
-      error: null,
+      error: false,
     });
 
     renderWithQueryClient(<UserModal userId={1} onClose={mockOnClose} />);
@@ -95,16 +91,14 @@ describe("UserModal", () => {
     expect(screen.getByText("Телефон:")).toBeInTheDocument();
     expect(screen.getByText("1-770-736-8031 x56442")).toBeInTheDocument();
     expect(screen.getByText("Адреса:")).toBeInTheDocument();
-    expect(
-      screen.getByText("Kulas Light, Apt. 556, Gwenborough, 92998-3874"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Kulas Light, Apt. 556, Gwenborough, 92998-3874")).toBeInTheDocument();
   });
 
   it("calls onClose when close button is clicked", () => {
     mockedUseUserDetails.mockReturnValue({
       user: mockUser,
       isLoading: false,
-      error: null,
+      error: false,
     });
 
     renderWithQueryClient(<UserModal userId={1} onClose={mockOnClose} />);
@@ -119,7 +113,7 @@ describe("UserModal", () => {
     mockedUseUserDetails.mockReturnValue({
       user: mockUser,
       isLoading: false,
-      error: null,
+      error: false,
     });
 
     renderWithQueryClient(<UserModal userId={1} onClose={mockOnClose} />);
@@ -135,7 +129,7 @@ describe("UserModal", () => {
     mockedUseUserDetails.mockReturnValue({
       user: mockUser,
       isLoading: false,
-      error: null,
+      error: false,
     });
 
     renderWithQueryClient(<UserModal userId={42} onClose={mockOnClose} />);
@@ -147,7 +141,7 @@ describe("UserModal", () => {
     mockedUseUserDetails.mockReturnValue({
       user: mockUser,
       isLoading: false,
-      error: null,
+      error: false,
     });
 
     renderWithQueryClient(<UserModal userId={1} onClose={mockOnClose} />);

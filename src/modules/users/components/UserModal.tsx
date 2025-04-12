@@ -1,15 +1,16 @@
-import React from "react";
-
-import { useUserDetails } from "../hooks/useUserDetails";
 import { Loader2 } from "lucide-react";
+
+import { Button } from "@/components/ui/Button";
 import {
   Dialog,
-  DialogHeader,
   DialogContent,
-  DialogTitle,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/Dialog";
-import { Button } from "@/components/ui/Button";
+
+import { useUserDetails } from "../hooks/useUserDetails";
+import UserField from "./UserField";
 
 interface UserModalProps {
   userId: number;
@@ -19,46 +20,36 @@ interface UserModalProps {
 export const UserModal: React.FC<UserModalProps> = ({ userId, onClose }) => {
   const { user, isLoading, error } = useUserDetails(userId);
 
+  const userFields = user
+    ? [
+        { label: "Ім'я", value: user.name },
+        { label: "Email", value: user.email },
+        { label: "Телефон", value: user.phone },
+        {
+          label: "Адреса",
+          value: `${user.address.street}, ${user.address.suite}, ${user.address.city}, ${user.address.zipcode}`,
+        },
+      ]
+    : [];
+
   return (
     <Dialog open={true} onOpenChange={() => onClose()}>
-      <DialogContent
-        aria-describedby={undefined}
-        className="sm:max-w-md bg-gray-200"
-      >
+      <DialogContent aria-describedby={undefined} className="sm:max-w-md bg-gray-200">
         <DialogHeader>
           <DialogTitle>Деталі користувача</DialogTitle>
         </DialogHeader>
 
         {isLoading ? (
           <div className="flex justify-center items-center h-32">
-            <Loader2
-              data-testid="loader"
-              className="h-8 w-8 animate-spin text-primary"
-            />
+            <Loader2 data-testid="loader" className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : error ? (
-          <div className="text-red-500 p-4">Помилка завантаження: {error}</div>
+          <div className="text-red-500 p-4">Помилка завантаження.</div>
         ) : user ? (
           <div className="py-4">
-            <div className="grid grid-cols-3 gap-2 mb-2">
-              <span className="font-medium">Ім'я:</span>
-              <span className="col-span-2">{user.name}</span>
-            </div>
-            <div className="grid grid-cols-3 gap-2 mb-2">
-              <span className="font-medium">Email:</span>
-              <span className="col-span-2">{user.email}</span>
-            </div>
-            <div className="grid grid-cols-3 gap-2 mb-2">
-              <span className="font-medium">Телефон:</span>
-              <span className="col-span-2">{user.phone}</span>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <span className="font-medium">Адреса:</span>
-              <span className="col-span-2">
-                {user.address.street}, {user.address.suite}, {user.address.city}
-                , {user.address.zipcode}
-              </span>
-            </div>
+            {userFields.map((field, index) => (
+              <UserField key={index} label={field.label} value={field.value} />
+            ))}
           </div>
         ) : null}
 

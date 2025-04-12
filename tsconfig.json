@@ -1,9 +1,6 @@
 {
   "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
   "compilerOptions": {
     "jsx": "react-jsx",
     "esModuleInterop": true,
@@ -16,6 +13,6 @@
       "@pages/*": ["./src/pages/*"],
       "@styles/*": ["./src/styles/*"]
     },
-    "types": ["jest", "@testing-library/jest-dom"],
+    "types": ["jest", "@testing-library/jest-dom"]
   }
 }

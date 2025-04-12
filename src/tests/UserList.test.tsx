@@ -1,7 +1,9 @@
 import React from "react";
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+
 import "@testing-library/jest-dom";
-import { UserList } from "../modules/users/components/UserList";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+
+import { UserList, useUsers } from "@/modules/users";
 
 interface User {
   id: number;
@@ -11,27 +13,19 @@ interface User {
 interface UseUsersReturn {
   users: User[];
   isLoading: boolean;
-  error: string | null;
+  error: boolean;
 }
 
 jest.mock("../modules/users/hooks/useUsers", () => ({
   useUsers: jest.fn(),
 }));
 
-import { useUsers } from "../modules/users/hooks/useUsers";
-
 jest.mock("react-virtualized-auto-sizer", () => ({
   __esModule: true,
   default: ({
     children,
   }: {
-    children: ({
-      width,
-      height,
-    }: {
-      width: number;
-      height: number;
-    }) => React.ReactNode;
+    children: ({ width, height }: { width: number; height: number }) => React.ReactNode;
   }) => children({ width: 1000, height: 600 }),
 }));
 
@@ -40,31 +34,17 @@ jest.mock("react-window", () => ({
     children,
     itemCount,
   }: {
-    children: ({
-      index,
-      style,
-    }: {
-      index: number;
-      style: React.CSSProperties;
-    }) => React.ReactNode;
+    children: ({ index, style }: { index: number; style: React.CSSProperties }) => React.ReactNode;
     itemCount: number;
   }) => (
     <div data-testid="virtual-list">
-      {Array.from({ length: itemCount }).map((_, index) =>
-        children({ index, style: {} }),
-      )}
+      {Array.from({ length: itemCount }).map((_, index) => children({ index, style: {} }))}
     </div>
   ),
 }));
 
 jest.mock("../modules/users/components/UserCard", () => ({
-  UserCard: ({
-    user,
-    onViewDetails,
-  }: {
-    user: User;
-    onViewDetails: (id: number) => void;
-  }) => (
+  UserCard: ({ user, onViewDetails }: { user: User; onViewDetails: (id: number) => void }) => (
     <div data-testid={`user-card-${user.id}`}>
       {user.name}
       <button onClick={() => onViewDetails(user.id)}>View Details</button>
@@ -92,9 +72,7 @@ describe("UserList Component", () => {
     { id: 3, name: "User 3" },
   ];
 
-  const mockedUseUsers = useUsers as unknown as jest.MockedFunction<
-    () => UseUsersReturn
-  >;
+  const mockedUseUsers = useUsers as unknown as jest.MockedFunction<() => UseUsersReturn>;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -104,36 +82,32 @@ describe("UserList Component", () => {
     mockedUseUsers.mockReturnValue({
       users: [],
       isLoading: true,
-      error: null,
+      error: false,
     });
 
     render(<UserList />);
 
     expect(screen.getByTestId("loader")).toBeInTheDocument();
-    expect(
-      screen.getByText("Завантаження користувачів..."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Завантаження користувачів...")).toBeInTheDocument();
   });
 
-  test("displays an error message if the request failed with an error", () => {
+  test("displays an error message if the request failed", () => {
     mockedUseUsers.mockReturnValue({
       users: [],
       isLoading: false,
-      error: "Failed to fetch users",
+      error: true,
     });
 
     render(<UserList />);
 
-    expect(
-      screen.getByText("Помилка завантаження: Failed to fetch users"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Помилка завантаження.")).toBeInTheDocument();
   });
 
-  test("displays an error message if the request failed with an error", () => {
+  test("displays a 'no users found' message when there are no users and no error", () => {
     mockedUseUsers.mockReturnValue({
       users: [],
       isLoading: false,
-      error: null,
+      error: false,
     });
 
     render(<UserList />);
@@ -145,7 +119,7 @@ describe("UserList Component", () => {
     mockedUseUsers.mockReturnValue({
       users: mockUsers,
       isLoading: false,
-      error: null,
+      error: false,
     });
 
     render(<UserList />);
@@ -163,7 +137,7 @@ describe("UserList Component", () => {
     mockedUseUsers.mockReturnValue({
       users: mockUsers,
       isLoading: false,
-      error: null,
+      error: false,
     });
 
     render(<UserList />);
@@ -171,11 +145,11 @@ describe("UserList Component", () => {
     expect(screen.getByTestId("user-search")).toBeInTheDocument();
   });
 
-  test('opens a modal window with user details when clicking on “View Details"', async () => {
+  test('opens a modal window with user details when clicking on "View Details"', async () => {
     mockedUseUsers.mockReturnValue({
       users: mockUsers,
       isLoading: false,
-      error: null,
+      error: false,
     });
 
     render(<UserList />);
@@ -188,11 +162,11 @@ describe("UserList Component", () => {
     expect(screen.getByText("User Modal for ID: 1")).toBeInTheDocument();
   });
 
-  test("closes the modal window when you click on the “Close” button", async () => {
+  test("closes the modal window when clicking the 'Close' button", async () => {
     mockedUseUsers.mockReturnValue({
       users: mockUsers,
       isLoading: false,
-      error: null,
+      error: false,
     });
 
     render(<UserList />);

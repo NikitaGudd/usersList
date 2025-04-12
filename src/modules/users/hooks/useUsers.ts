@@ -1,17 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
+
+import { useQuery } from "@tanstack/react-query";
+
 import { fetchUsers } from "../api/userApi";
 import { useUserStore } from "../store/userStore";
 
 export const useUsers = () => {
-  const {
-    setUsers,
-    setLoading,
-    setError,
-    filteredUsers,
-    searchQuery,
-    setSearchQuery,
-  } = useUserStore();
+  const { setUsers, setLoading, setError, filteredUsers, searchQuery, setSearchQuery } =
+    useUserStore();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["users"],
@@ -23,13 +19,17 @@ export const useUsers = () => {
       setUsers(data);
     }
     setLoading(isLoading);
-    setError(error ? String(error) : null);
+    setError(!!error);
+
+    if (error) {
+      console.error("Error when receiving user data:", error);
+    }
   }, [data, isLoading, error, setUsers, setLoading, setError]);
 
   return {
     users: filteredUsers,
     isLoading,
-    error: error ? String(error) : null,
+    error: !!error,
     searchQuery,
     setSearchQuery,
   };
